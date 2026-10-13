@@ -1,0 +1,13 @@
+.venv
+.env
+.env.local
+meetingnote.db
+*.wav
+__pycache__
+.pytest_cache
+.claude
+tests
+publish
+docs
+openspec
+TODO.md
