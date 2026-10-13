@@ -33,7 +33,7 @@ backend/app/
   security.py      bcrypt · JWT 발급과 검증 · 현재 사용자 · 팀 멤버 확인
   errors.py        ApiError(status, code, msg) 와 {code, msg} 응답
   activity.py      활동 남기기와 완성 문장 만들기
-  ai.py            받아쓰기 · 세 항목 구분 (OpenAI). 테스트가 갈아끼우는 자리
+  ai.py            받아쓰기 · 세 항목 구분 (Gemini). 테스트가 갈아끼우는 자리
   routers/         auth · teams · meetings · todos · comments · activities
 frontend/          publish 의 화면 6종 + theme.js + api.js
 tests/             pytest
@@ -78,9 +78,11 @@ tests/             pytest
 ### 받아쓰기와 세 항목 구분 (결정기록 2)
 
 - `ai.py` 에 함수 둘: `transcribe(bytes, filename) -> str`, `split(body, member_names) -> {summary, decisions: [str], todos: [{what, assignee, due}]}`
-- OpenAI 공식 SDK. 받아쓰기 모델 `STT_MODEL`(기본 `whisper-1`), 구분 모델 `LLM_MODEL`(기본 `gpt-4o-mini`). 키는 `STT_API_KEY` 하나. 모델 이름을 환경변수로 뺀 것은 공급자 쪽 모델 교체가 잦아서다
-- 구분은 JSON 출력 지시 + 결과 검증. 담당자는 팀 멤버 이름과 정확히 같을 때만 연결하고 나머지는 null
-- 구분이 실패하면 세 항목을 비우고 저장한다(본문은 잃지 않음). 받아쓰기는 SDK 타임아웃 60초
+- Gemini API, SDK 는 `google-genai` (결정기록 2, 2026-10-06 OpenAI 에서 변경). 받아쓰기 모델 `STT_MODEL` · 구분 모델 `LLM_MODEL` 모두 기본 `gemini-3.1-flash-lite`. 키는 `STT_API_KEY` 하나. 모델 이름을 환경변수로 뺀 것은 공급자 쪽 모델 교체가 잦아서다
+- 받아쓰기는 오디오를 `generate_content` 에 넣어 전문을 받는다. 15MB 이하는 요청에 바로 싣고(`Part.from_bytes`), 넘으면 Files API 로 먼저 올린다 - 요청 전체 20MB 제한 때문
+- 형식(wav · mp3)은 업로드 판정 결과를 그대로 넘겨 mime type 으로 쓴다
+- 구분은 JSON 출력(`response_mime_type=application/json`) + 결과 검증. 담당자는 팀 멤버 이름과 정확히 같을 때만 연결하고 나머지는 null
+- 구분이 실패하면 세 항목을 비우고 저장한다(본문은 잃지 않음). 받아쓰기는 HTTP 타임아웃 60초
 - 테스트는 `ai.transcribe` · `ai.split` 을 가짜로 바꾼다. 실제 호출 시험은 수락 항목에서 키를 넣고 한 번 한다
 
 ### 업로드 판정

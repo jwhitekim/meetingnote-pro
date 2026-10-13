@@ -2,13 +2,13 @@
 
 ## Why
 
-`docs/` 의 프로그램정의서 · 스토리보드 · 디자인시스템과 `publish/` 퍼블리싱 HTML 로 MeetingNote Pro 의 1회차 범위(기능 6종 · API 26개 · DB 7테이블 · 화면 6종 · 상태 62종)가 확정됐다. 저장소에는 아직 코드가 없다. 확정된 문서 그대로 동작하는 로컬 앱을 만들어, 팀이 회의록을 올리고 할 일을 칸반으로 추적하게 한다.
+`docs/` 의 프로그램정의서 · 스토리보드 · 디자인시스템과 `publish/` 퍼블리싱 HTML 로 MeetingNote Pro 의 1회차 범위(기능 6종 · API 26개 · DB 7테이블 · 화면 6종 · 상태 62종)가 확정됐다. 저장소에는 아직 코드가 없다. 확정된 문서 그대로 동작하는 로컬 앱을 만들어, 팀이 회의록을 올리고 할 일을 칸반으로 추적하게 한다. 
 
 ## What Changes
 
 - FastAPI 백엔드를 새로 만든다. `/api/` 아래 26개 경로를 스토리보드 I-01 통합매핑표대로 구현한다
 - 회원가입 · 로그인(JWT 24시간 · bcrypt), 팀 생성 · 초대코드 합류(팀당 6명), 회의록 CRUD · 검색 · 녹취 업로드를 만든다
-- 업로드한 녹취(mp3 · wav · 25MB 이하)는 OpenAI 로 받아쓰고, 저장할 때 같은 공급자로 요약 · 결정사항 · 할 일 세 항목을 나눈다
+- 업로드한 녹취(mp3 · wav · 25MB 이하)는 Gemini API 로 받아쓰고, 저장할 때 같은 공급자로 요약 · 결정사항 · 할 일 세 항목을 나눈다
 - 할 일 칸반(대기 · 진행 · 완료), 댓글, 활동 기록 5종을 만든다
 - `publish/` 의 화면 6종을 마크업과 클래스 그대로 옮기고, 목업 데이터와 STATE 바를 걷어낸 뒤 API 에 연결한다
 - FastAPI 가 화면 파일까지 함께 제공한다(로컬 일체형). DB 는 로컬 SQLite, `DATABASE_URL` 이 있으면 그 DB 를 쓴다
@@ -45,6 +45,6 @@
 ## Impact
 
 - 새 코드: `backend/`(FastAPI 앱), `frontend/`(화면 6종 + `theme.js`), `tests/`(pytest)
-- 의존성: FastAPI · uvicorn · SQLAlchemy · PyJWT · bcrypt · python-multipart · openai · python-dotenv · pytest · httpx
+- 의존성: FastAPI · uvicorn · SQLAlchemy · PyJWT · bcrypt · python-multipart · google-genai · python-dotenv · pytest · httpx
 - 설정: `.env` 의 `JWT_SECRET` · `STT_API_KEY` · `DATABASE_URL`(선택) · `CORS_ORIGINS`. `.env` 와 `meetingnote.db` 는 git 에서 뺀다
-- 외부 시스템: OpenAI API (받아쓰기 · 세 항목 구분)
+- 외부 시스템: Gemini API (받아쓰기 · 세 항목 구분)
